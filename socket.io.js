@@ -116,7 +116,7 @@ if (typeof window != 'undefined'){
 	};
 
 	Transport.prototype.disconnect = function(){
-		this.disconnecting = true;
+		this.base.disconnecting = true;
 		this.rawsend('~3~5~close');
 		this._disconnect();
 	};
@@ -233,7 +233,7 @@ if (typeof window != 'undefined'){
 	Transport.prototype._onConnect = function(){
 		this.connected = true;
 		this.connecting = false;
-		this.disconnecting = false;
+		this.base.disconnecting = false;
 		this.base._onConnect();
 		this._setTimeout();
 	};
@@ -241,7 +241,7 @@ if (typeof window != 'undefined'){
 	Transport.prototype._onDisconnect = function(){
 		this.connecting = false;
 		this.connected = false;
-		this.disconnecting = false;
+		this.base.disconnecting = false;
 		this.sessionid = null;
 		this.base._onDisconnect();
 	};
@@ -312,7 +312,7 @@ if (typeof window != 'undefined'){
 			}
 			this._sendBuffer = [];
 			this._send(data);
-		} else if (this.disconnecting) {
+		} else if (this.base.disconnecting) {
 			this._disconnect();
 		}
 	};
@@ -854,6 +854,9 @@ JSONPPolling.xdomainCheck = function(){
 				this.options[i] = options[i];
 		this.connected = false;
 		this.connecting = false;
+		this.disconnecting = false;
+		this.wasConnected = false;
+		this.wasConnecting = false;
 		this._events = {};
 		this.transport = this.getTransport();
 		if (!this.transport && 'console' in window) console.error('No transport available');
@@ -907,7 +910,7 @@ JSONPPolling.xdomainCheck = function(){
 	
 	Socket.prototype.send = function(data){
 		if (!this.transport || !this.transport.connected) return this._queue(data);
-		if (!this.transport.disconnecting) this.transport.send(data);
+		if (!this.disconnecting) this.transport.send(data);
 		return this;
 	};
 	
@@ -968,11 +971,12 @@ JSONPPolling.xdomainCheck = function(){
 	};
 	
 	Socket.prototype._onDisconnect = function(){
-		var wasConnected = this.connected;
+		this.wasConnected = this.connected;
+		this.wasConnecting = this.connecting;
 		this.connected = false;
 		this.connecting = false;
 		this._queueStack = [];
-		if (wasConnected) this.fire('disconnect');
+		this.fire('disconnect');
 	};
 	
 	Socket.prototype.addListener = Socket.prototype.addEvent = Socket.prototype.addEventListener = Socket.prototype.on;
