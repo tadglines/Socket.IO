@@ -64,6 +64,12 @@ if (typeof window != 'undefined'){
 
 		isArray: function(obj){
 			return Object.prototype.toString.call(obj) === '[object Array]';
+		},
+		
+		merge: function(target, additional){
+			for (var i in additional)
+				if (additional.hasOwnProperty(i))
+					target[i] = additional[i];
 		}
 
 	};
@@ -178,9 +184,7 @@ if (typeof window != 'undefined'){
 		this.options = {
 			timeout: 15000 // based on heartbeat interval default
 		};
-		for (var i in options) 
-			if (this.options.hasOwnProperty(i))
-				this.options[i] = options[i];
+		io.util.merge(this.options, options);
 		this.message_id = 0;
 	};
 
@@ -401,7 +405,7 @@ if (typeof window != 'undefined'){
 			}
 		};
 		this._sendXhr.send(data);
-	},
+	};
 	
 	XHR.prototype.disconnect = function(){
 		// send disconnection signal
@@ -480,7 +484,7 @@ if (typeof window != 'undefined'){
 	};
 
 	WS.prototype.rawsend = function(data){
-		this.socket.send(data);
+		if (this.socket) this.socket.send(data);
 		
 		/*
 		 * This rigmarole is required because the WebSockets specification doesn't say what happens
@@ -504,7 +508,7 @@ if (typeof window != 'undefined'){
 	
 	WS.prototype.disconnect = function(){
 		this.disconnectCalled = true;
-		this.socket.close();
+		if (this.socket) this.socket.close();
 		return this;
 	};
 
@@ -589,18 +593,7 @@ if (typeof window != 'undefined'){
 		return this;
 	};
 	
-	Flashsocket.prototype._onClose = function(){
-		if (this.base.socketState == this.base.CONNECTING){
-			// something failed, we might be behind a proxy, so we'll try another transport
-			this.base.options.transports.splice(io.util.indexOf(this.base.options.transports, 'flashsocket'), 1);
-			this.base.transport = this.base.getTransport();
 			this.base.socketState = this.base.CLOSED;
-			this.base.connect();
-			return;
-		}
-		return io.Transport.websocket.prototype._onClose.call(this);
-	};
-	
 	Flashsocket.check = function(){
 		if (typeof WebSocket == 'undefined' || !('__addTask' in WebSocket)) return false;
 		if (io.util.opera) return false; // opera is buggy with this transport
@@ -663,12 +656,14 @@ if (typeof window != 'undefined'){
 		var script = doc.getElementsByTagName('script')[0];
 		script.parentNode.removeChild(script);
 	};
-	
+
 	HTMLFile.prototype._destroy = function(){
-		this._iframe.src = 'about:blank';
-		this._doc = null;
-		CollectGarbage();
-	};
+		if (this._iframe){
+			this._iframe.src = 'about:blank';
+			this._doc = null;
+			CollectGarbage();
+		}
+  };
 	
 	HTMLFile.prototype.disconnect = function(){
 		this._destroy();
