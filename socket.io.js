@@ -593,7 +593,6 @@ if (typeof window != 'undefined'){
 		return this;
 	};
 	
-			this.base.socketState = this.base.CLOSED;
 	Flashsocket.check = function(){
 		if (typeof WebSocket == 'undefined' || !('__addTask' in WebSocket)) return false;
 		if (io.util.opera) return false; // opera is buggy with this transport
@@ -933,9 +932,7 @@ JSONPPolling.xdomainCheck = function(){
 	
 	var Socket = io.Socket = function(host, options){
 		this.host = host || document.domain;
-		for (var i in options) 
-			if (this.options.hasOwnProperty(i))
-				this.options[i] = options[i];
+		io.util.merge(this.options, options);
 		this.transport = this.getTransport();
 		if (!this.transport && 'console' in window) console.error('No transport available');
 	};
