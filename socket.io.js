@@ -978,7 +978,7 @@ JSONPPolling.xdomainCheck = function(){
 			},
 			connectTimeout: 5000,
 			tryTransportsOnConnectTimeout: true,
-			rememberTransport: true
+			rememberTransport: false
 		};
 
 	Socket.prototype.socketState = Socket.prototype.CLOSED;
