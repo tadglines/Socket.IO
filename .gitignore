@@ -1,1 +1,4 @@
 s3
+*.iml
+*.ipr
+*.iws
