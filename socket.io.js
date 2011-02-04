@@ -424,6 +424,7 @@ if (typeof window != 'undefined'){
 		if (this._sendXhr){
 			this._sendXhr.onreadystatechange = this._sendXhr.onload = empty;
 			this._sendXhr.abort();
+			this._posting = false;
 			this._sendXhr = null;
 		}
 		this._sendBuffer = [];
@@ -773,8 +774,14 @@ if (typeof window != 'undefined'){
 		this._xhr = this._request(+ new Date, 'GET');
 		if ('onload' in this._xhr){
 			this._xhr.onload = function(){
-				self._onData(this.responseText);
-				self._get();
+				var status;
+				try { status = self._xhr.status; } catch(e){}
+				if (status == 200){
+					self._onData(this.responseText);
+					self._get();
+				} else {
+					self._onDisconnect();
+                }
 			};
 			this._xhr.onerror = function(){
 				self._onDisconnect();
