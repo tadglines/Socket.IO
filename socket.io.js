@@ -1012,7 +1012,11 @@ JSONPPolling.xdomainCheck = function(){
 		}
 		return null;
 	};
-	
+
+    Socket.prototype.isConnected = function(){
+        return this.socketState == this.CONNECTED;
+    };
+
 	Socket.prototype.connect = function(){
 		if (this.socketState != this.CLOSED) throw ("Socket not closed!");
 		if (!this.transport) throw ("No available transports!");
