@@ -361,6 +361,7 @@ if (typeof window != 'undefined'){
 	io.util.inherit(XHR, io.Transport);
 	
 	XHR.prototype.connect = function(){
+        this._posting = false;
 		this._get();
 		return this;
 	};
